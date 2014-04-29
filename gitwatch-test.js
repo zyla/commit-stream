@@ -9,6 +9,6 @@ w.on('open', function() {
 w.on('newCommits', function(newCommits) {
 	console.log('New commits:');
 	newCommits.forEach(function(commit) {
-		console.log('* ' + commit.sha() + ' ' + commit.message.trim());
+		console.log('* ' + commit.sha() + ' ' + commit.message().trim());
 	});
 });
