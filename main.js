@@ -41,28 +41,39 @@ async.map(Object.keys(config.dirs), function(name, callback) {
 	console.log('OK, started.');
 
 	Object.keys(repos).forEach(function(name) {
-		repos[name].addListener('newCommits', ee.emit.bind(ee, 'newCommits', name));
+		repos[name].addListener('newCommits', function(newCommits) {
+			emitCommits(name, newCommits);
+		});
 	});
 });
 
-var ee = new EventEmitter();
+function emitCommits(repo, newCommits) {
+	for(var i =  newCommits.length-1; i >= 0; i--) {
+		var commit = newCommits[i];
+		ee.emit('newCommit', formatCommit(repo, commit));
+	}
+}
 
-var wss = new ws.Server({ port: 8097 });
-wss.on('connection', function(ws) {
-	function onNewCommits(repo, newCommits) {
-		for(var i =  newCommits.length-1; i >= 0; i--) {
-			var commit = newCommits[i];
-			ws.send(JSON.stringify({ repo: repo, sha: commit.sha(),
+function formatCommit(repo, commit) {
+	return { repo: repo, sha: commit.sha(),
 				author: commit.author().toString(),
 				committer: commit.committer().toString(),
 				date: commit.date().toString(),
-				message: commit.message().trim() }));
-		}
+				message: commit.message().trim() };
+}
+
+var ee = new EventEmitter();
+ee.setMaxListeners(0);
+
+var wss = new ws.Server({ port: 8097 });
+wss.on('connection', function(ws) {
+	function onNewCommit(newCommit) {
+		ws.send(JSON.stringify(newCommit));
 	}
 
-	ee.addListener('newCommits', onNewCommits);
+	ee.addListener('newCommit', onNewCommit);
 
 	ws.on('close', function() {
-		ee.removeListener('newCommits', onNewCommits);
+		ee.removeListener('newCommit', onNewCommit);
 	});
 });
