@@ -82,6 +82,8 @@ function readInitialCommits() {
 			var d2 = new Date(b.date);
 			return d1>d2?1:d1<d2?-1:0;
 		});
+		if(list.length > MAX_COMMITS)
+			list = list.splice(0, list.length - MAX_COMMITS);
 		feed = list;
 		startWS();
 	});
