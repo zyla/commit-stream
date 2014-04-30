@@ -20,6 +20,21 @@ function traverse(basedir, dir, prefix, callback) {
 			var repoName = path.join(prefix, base);
 			console.log('Found repo: ' + repoName);
 			repos[repoName] = new GitWatch(path.join(basedir, dir));
+			numRepos++;
+			repos[repoName].addListener('open', function() {
+				numOpened++;
+				if(finished && numRepos == numOpened) {
+					readInitialCommits();
+				}
+			});
+			repos[repoName].addListener('error', function(err) {
+				repos[repoName].error = true;
+				console.log(repoName + ": " + err.toString());
+				numOpened++;
+				if(finished && numRepos == numOpened) {
+					readInitialCommits();
+				}
+			});
 			callback(null, []);
 		} else {
 			async.map(files, function(file, callback) {
@@ -35,10 +50,52 @@ function traverse(basedir, dir, prefix, callback) {
 	});
 }
 
+var MAX_COMMITS = 10;
+
+function readInitialCommits() {
+	console.log('Reading commits...');
+	async.map(Object.keys(repos), function(name, callback) {
+		if(repos[name].error) { callback(null, []); return; }
+		var repo = repos[name].repo;
+		repo.getReference(repos[name].headRef, function(err, ref) {
+			if(err) throw err;
+			repo.getCommit(ref.target(), function(err, master) {
+				if(err) throw err;
+				var clist = [];
+				var counter = 0;
+				GitWatch.walkCommit(repo, master, function(commit, next) {
+					if(!commit || counter == MAX_COMMITS) {
+						callback(null, clist);
+					} else {
+						counter++;
+						clist.push(formatCommit(name, commit));
+						next();
+					}
+				});
+			});
+		});
+	}, function(err, lists) {
+		if(err) throw err;
+		var list = Array.prototype.concat.apply([], lists);
+		list.sort(function(a, b) {
+			var d1 = new Date(a.date);
+			var d2 = new Date(b.date);
+			return d1>d2?1:d1<d2?-1:0;
+		});
+		feed = list;
+		startWS();
+	});
+}
+
+var numRepos = 0, numOpened = 0, finished = false;
+
 async.map(Object.keys(config.dirs), function(name, callback) {
 	traverse(config.dirs[name], '', name, callback);
 }, function() {
-	console.log('OK, started.');
+	finished = true;
+	if(numRepos == numOpened) {
+		readInitialCommits();
+	}
 
 	Object.keys(repos).forEach(function(name) {
 		repos[name].addListener('newCommits', function(newCommits) {
@@ -50,8 +107,15 @@ async.map(Object.keys(config.dirs), function(name, callback) {
 function emitCommits(repo, newCommits) {
 	for(var i =  newCommits.length-1; i >= 0; i--) {
 		var commit = newCommits[i];
-		ee.emit('newCommit', formatCommit(repo, commit));
+		pushCommit(formatCommit(repo, commit));
 	}
+}
+
+function pushCommit(commit) {
+	if(feed.length == MAX_FEED)
+		delete feed[0]; // FIXME grossly inefficient!
+	feed.push(commit);
+	ee.emit('newCommit', commit);
 }
 
 function formatCommit(repo, commit) {
@@ -65,15 +129,23 @@ function formatCommit(repo, commit) {
 var ee = new EventEmitter();
 ee.setMaxListeners(0);
 
-var wss = new ws.Server({ port: 8097 });
-wss.on('connection', function(ws) {
-	function onNewCommit(newCommit) {
-		ws.send(JSON.stringify(newCommit));
-	}
+var feed = [];
+var MAX_FEED = 50;
 
-	ee.addListener('newCommit', onNewCommit);
+function startWS() {
+	var wss = new ws.Server({ port: 8097 });
+	wss.on('connection', function(ws) {
+		feed.forEach(onNewCommit);
 
-	ws.on('close', function() {
-		ee.removeListener('newCommit', onNewCommit);
+		function onNewCommit(newCommit) {
+			ws.send(JSON.stringify(newCommit));
+		}
+
+		ee.addListener('newCommit', onNewCommit);
+
+		ws.on('close', function() {
+			ee.removeListener('newCommit', onNewCommit);
+		});
 	});
-});
+	console.log('OK, started.');
+}
