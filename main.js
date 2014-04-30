@@ -123,7 +123,7 @@ function formatCommit(repo, commit) {
 				author: commit.author().toString(),
 				committer: commit.committer().toString(),
 				date: commit.date().toString(),
-				message: commit.message().trim() };
+				message: commit.message().split('\n')[0].trim() };
 }
 
 var ee = new EventEmitter();
