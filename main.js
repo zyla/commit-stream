@@ -5,6 +5,7 @@ var ws = require('ws'),
 	GitWatch = require('./lib/git-watch'),
 	static = require('node-static'),
 	http = require('http'),
+	ejs = require('ejs'),
 	EventEmitter = require('events').EventEmitter;
 
 var config = require('./config');
@@ -155,10 +156,22 @@ function startWS() {
 	console.log('OK, started.');
 }
 
+function loadTemplate(name) {
+	return ejs.compile(fs.readFileSync(require.resolve(name), 'utf-8'));
+}
+
 function startHHTP() {
 	var fileServer = new static.Server('./frontend');
+	var index = loadTemplate('./templates/index.ejs');
 	httpServer = http.createServer(function(request, response) {
-		fileServer.serve(request, response);
+		if(request.url == '/') {
+			var context = {
+				config: config
+			};
+			response.end(index(context));
+		} else {
+			fileServer.serve(request, response);
+		}
 	});
 	httpServer.listen(config.port || 8097);
 }

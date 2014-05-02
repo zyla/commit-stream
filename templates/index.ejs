@@ -6,7 +6,7 @@
 <script src="jquery-1.9.1.min.js"></script>
 <script src="jquery.timeago.js"></script>
 <script>
-var ws = new WebSocket('ws://neutrino.re:8097/');
+var ws = new WebSocket('<%= config.socketUrl %>');
 ws.addEventListener('message', function(event) {
 	var commit = JSON.parse(event.data);
 	var el = document.createElement('p');
