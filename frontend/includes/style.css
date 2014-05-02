@@ -1,0 +1,175 @@
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,100);
+@import url(http://fonts.googleapis.com/css?family=Bitter:400,700);
+.clear {
+ overflow: auto;
+ width: 100%;
+}
+.float-left {
+ float: left;
+}
+
+.float-right {
+
+ float: right;
+}
+
+.logo {
+ width: 32px;
+ height: 32px;
+ margin: 9px; 
+ float: left;
+}
+
+body {
+ margin: 0;
+}
+
+#wrapper {
+ margin: 0 auto;
+ width: 100%;
+}
+
+header {
+ font-size: 24px;
+ position: fixed;
+ top: 0px;
+ width: 100%;
+ font-family: 'Bitter', serif;
+}
+
+
+header h1{
+ float: left;
+ font-size: 24px;
+ margin: 12px 0 0 0;
+ font-weight: 300;
+}
+
+header, footer{
+ background: #EEEEEE;
+}
+
+header, nav, footer, nav a, footer p {
+ height: 50px;
+}
+
+.oneline{
+ width: 100%;
+ overflow: auto;
+}
+
+div.menuic {
+ float: right;
+}
+
+img.menuic {
+ display:none;
+ height: 30px;
+ width: 30px;
+ padding: 10px;
+}
+
+@media screen and (max-width: 600px)
+{
+ ul{
+  display: none;
+ }
+ nav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 50px;
+ }
+ header h1{
+ font-size: 20px;
+ }
+ img.menuic {
+  display: block;
+ }
+ nav:hover {
+  width: 100px;
+ }
+ nav:hover > div img{
+  background: #CCCCCC;
+ }
+ nav:hover > ul {
+  display: block;
+  float: none;
+  overflow: visible;
+ }
+ nav:hover > ul li {
+  border-style: solid;
+  border-width: 2px 0 0 0;
+  border-color: #FFFFFF;
+ }
+ footer {
+  font-size: 12px;
+ }
+}
+
+
+nav {
+ float: right;
+}
+
+
+header nav {
+ margin 0;
+ padding: 0;
+}
+
+nav ul {
+ height: 100%;
+ width: 100%;
+ list-style-type: none;
+ margin: 0;
+ float: left;
+}
+
+nav ul, nav li {
+ text-align: center;
+ padding: 0;
+}
+
+nav li {
+ float: right;
+ background: #DDDDDD;
+ margin-left: 2px;
+}
+
+nav a {
+ width: 100px;
+ text-decoration: none;
+ color: #000000;
+ display: table-cell;
+ vertical-align: middle;
+}
+main {
+ margin-top: 60px;
+ margin-bottom: 10px;
+ /*width: 80%;
+ max-width: 1000px;
+ padding: 10px;
+ margin-left: 0;*/
+}
+
+footer {
+ /*position: fixed;
+ bottom: 0px;*/
+ overflow: auto;
+ width: 100%;
+ font-family: 'Roboto', serif;
+ padding-left: 10px;
+ font-size: 14px;
+}
+
+footer a{
+ text-decoration: none;
+ color: #666666;
+}
+
+footer p{
+ display: table-cell;
+ vertical-align: middle;
+}
+
