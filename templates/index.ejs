@@ -5,55 +5,30 @@
 <link rel="shortcut icon" type="image/icon" href="./includes/favicon.ico" />
 <script src="jquery-1.9.1.min.js"></script>
 <script src="jquery.timeago.js"></script>
+<script type="text/ejs" id="commit_template">
+<% buf.push(commitTemplate); /* HACK */ %>
+</script>
+<script src="ejs.js"></script>
 <script>
 var ws = new WebSocket('<%= config.socketUrl %>');
+var template = document.getElementById('commit_template').textContent;
 ws.addEventListener('message', function(event) {
 	var commit = JSON.parse(event.data);
+
+	var src = ejs.render(template, commit);
+
 	var el = document.createElement('p');
+	el.className = 'commit';
+	el.innerHTML = src;
 	
-	var repo = document.createElement('span');
-	repo.className = 'repo';
-	// regex-fu
-	repo.innerHTML = commit.repo.replace(/\/([^\/]+)$/, '/<span class="reponame">$1</span>');
-	el.appendChild(repo);
-
-	var date = document.createElement('span');
-	date.className = 'date';
-	date.appendChild(document.createTextNode(commit.date));
-	date.title = new Date(commit.date).toISOString();
-
-	var author = (/<(.*?)[@>+]/.exec(commit.author) || ['',commit.author])[1];
-
-	var au = document.createElement('span');
-	au.className = 'author';
-	au.appendChild(document.createTextNode(author));
-	au.title = commit.author;
-
-
-	var message = document.createElement('span');
-	message.className = 'message';
-	message.appendChild(document.createTextNode(truncate(commit.message, 80)));
-	message.title = commit.message;
-	el.appendChild(message);
-
-	var x = document.createElement('div');
-	x.className = 'author-date';
-	x.appendChild(au);
-	x.appendChild(document.createTextNode(' '));
-	x.appendChild(date);
-
-	el.appendChild(x);
-
 	var commits = document.getElementById('commits');
 	if(commits.firstChild)
 		commits.insertBefore(el, commits.firstChild);
 	else
 		commits.appendChild(el);
-	jQuery(date).timeago();
+
+	jQuery(el).find('.date').timeago();
 });
-function truncate(str, len) {
-	return str.length > len? str.substring(0, len) + '...': str;
-}
 </script>
 <style>
 body, html { margin: 0; padding: 0; width: 100%; }

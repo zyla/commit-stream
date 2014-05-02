@@ -1,0 +1,16 @@
+<%
+var a = /^(.*\/)([^\/]+)$/.exec(repo);
+var repoPrefix = a[1], reponame = a[2];
+var username = (/<(.*?)[@>+]/.exec(author) || ['',author])[1];
+var dateISO = new Date(date).toISOString();
+%>
+	<span class="repo">
+		<%= repoPrefix -%><span class="reponame"><%= reponame %></span>
+	</span>
+	<span class="message">
+		<%= message %>
+	</span>
+	<div class="author-date">
+		<span class="author"><%= username %></span>
+		<span class="date" title="<%= dateISO %>"><%= date %></span>
+	</div>

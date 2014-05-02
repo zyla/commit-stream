@@ -163,10 +163,12 @@ function loadTemplate(name) {
 function startHHTP() {
 	var fileServer = new static.Server('./frontend');
 	var index = loadTemplate('./templates/index.ejs');
+	var commitTemplate = fs.readFileSync(require.resolve('./templates/commit.ejs'), 'utf-8');
 	httpServer = http.createServer(function(request, response) {
 		if(request.url == '/') {
 			var context = {
-				config: config
+				config: config,
+				commitTemplate: commitTemplate
 			};
 			response.end(index(context));
 		} else {
