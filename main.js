@@ -3,6 +3,8 @@ var ws = require('ws'),
 	fs = require('fs'),
 	async = require('async'),
 	GitWatch = require('./lib/git-watch'),
+	static = require('node-static'),
+	http = require('http'),
 	EventEmitter = require('events').EventEmitter;
 
 var config = require('./config');
@@ -85,6 +87,7 @@ function readInitialCommits() {
 		if(list.length > MAX_COMMITS)
 			list.splice(0, MAX_COMMITS);
 		feed = list;
+		startHHTP();
 		startWS();
 	});
 }
@@ -135,7 +138,7 @@ var feed = [];
 var MAX_FEED = 50;
 
 function startWS() {
-	var wss = new ws.Server({ port: 8097 });
+	var wss = new ws.Server({ server: httpServer });
 	wss.on('connection', function(ws) {
 		feed.forEach(onNewCommit);
 
@@ -150,4 +153,12 @@ function startWS() {
 		});
 	});
 	console.log('OK, started.');
+}
+
+function startHHTP() {
+	var fileServer = new static.Server('./frontend');
+	httpServer = http.createServer(function(request, response) {
+		fileServer.serve(request, response);
+	});
+	httpServer.listen(config.port || 8097);
 }

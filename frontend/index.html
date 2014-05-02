@@ -1,0 +1,111 @@
+<html>
+<head>
+<title>Commit Stream</title>
+<link rel="stylesheet" type="text/css" href="http://buoto.neutrino.re/commit/style.css" />
+<link rel="shortcut icon" type="image/icon" href="http://buoto.neutrino.re/commit/favicon.ico" />
+<script src="jquery-1.9.1.min.js"></script>
+<script src="jquery.timeago.js"></script>
+<script>
+var ws = new WebSocket('ws://neutrino.re:8097/');
+ws.addEventListener('message', function(event) {
+	var commit = JSON.parse(event.data);
+	var el = document.createElement('p');
+	
+	var repo = document.createElement('span');
+	repo.className = 'repo';
+	// regex-fu
+	repo.innerHTML = commit.repo.replace(/\/([^\/]+)$/, '/<span class="reponame">$1</span>');
+	el.appendChild(repo);
+
+	var date = document.createElement('span');
+	date.className = 'date';
+	date.appendChild(document.createTextNode(commit.date));
+	date.title = new Date(commit.date).toISOString();
+
+	var author = (/<(.*?)[@>+]/.exec(commit.author) || ['',commit.author])[1];
+
+	var au = document.createElement('span');
+	au.className = 'author';
+	au.appendChild(document.createTextNode(author));
+	au.title = commit.author;
+
+
+	var message = document.createElement('span');
+	message.className = 'message';
+	message.appendChild(document.createTextNode(truncate(commit.message, 80)));
+	message.title = commit.message;
+	el.appendChild(message);
+
+	var x = document.createElement('div');
+	x.className = 'author-date';
+	x.appendChild(au);
+	x.appendChild(document.createTextNode(' '));
+	x.appendChild(date);
+
+	el.appendChild(x);
+
+	var commits = document.getElementById('commits');
+	if(commits.firstChild)
+		commits.insertBefore(el, commits.firstChild);
+	else
+		commits.appendChild(el);
+	jQuery(date).timeago();
+});
+function truncate(str, len) {
+	return str.length > len? str.substring(0, len) + '...': str;
+}
+</script>
+<style>
+body, html { margin: 0; padding: 0; width: 100%; }
+body {
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+#commits {
+	display: table;
+	font-family: monospace;
+	width: 100%;
+}
+
+#commits p { display: table-row; width: 100%; }
+#commits p:hover {
+	background-color: #f0f0f0;
+}
+#commits p > * {
+	display: table-cell;
+	white-space: nowrap;
+	padding-right: 5px;
+}
+#commits p:hover > span {
+}
+.date {
+	color: #007700;
+}
+.author {
+	color: #000099;
+}
+//.author-date { text-align: right; }
+.message {
+
+}
+.repo { color: #999; text-align: right; }
+.reponame { color: rgb(198, 98, 0); }
+</style>
+</head>
+<body>
+<header>
+<img src="http://buoto.neutrino.re/commit/gitIcon.png" class="logo" />
+<h1>
+Git Commit Stream
+</h1>
+</header>
+<main>
+<div id="commits"></div>
+</main>
+<footer>
+<p>
+Git Logo by <a href="http://twitter.com/jasonlong">Jason Long</a> is licensed under the <a href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 Unported License</a>.
+</p>
+</footer>
+</body>
+</html>
