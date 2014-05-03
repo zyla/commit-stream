@@ -1,3 +1,7 @@
 Commitstream TODO
 
 1. Create responsive layout
+2. Make date in tooltip more readable
+3. Get rid of jquery
+4. Handle disconnects properly
+5. Prerender content on the server (SEO friendly!)
