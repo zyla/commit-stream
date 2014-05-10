@@ -9,6 +9,8 @@ var ws = require('ws'),
 	EventEmitter = require('events').EventEmitter;
 
 var config = require('./config');
+config.commitListSize = config.commitListSize || 100;
+config.commitsPerRepo = config.commitsPerRepo || 50;
 
 var exclude = [ 'build', 'bin', 'classes', 'src', 'photos' ];
 
@@ -53,7 +55,6 @@ function traverse(basedir, dir, prefix, callback) {
 	});
 }
 
-var MAX_COMMITS = 10;
 
 function readInitialCommits() {
 	console.log('Reading commits...');
@@ -67,7 +68,7 @@ function readInitialCommits() {
 				var clist = [];
 				var counter = 0;
 				GitWatch.walkCommit(repo, master, function(commit, next) {
-					if(!commit || counter == MAX_COMMITS) {
+					if(!commit || counter == config.commitsPerRepo) {
 						callback(null, clist);
 					} else {
 						counter++;
@@ -85,8 +86,8 @@ function readInitialCommits() {
 			var d2 = new Date(b.date);
 			return d1>d2?1:d1<d2?-1:0;
 		});
-		if(list.length > MAX_COMMITS)
-			list.splice(0, MAX_COMMITS);
+		if(list.length > config.commitListSize)
+			list.splice(0, config.commitListSize);
 		feed = list;
 		startHHTP();
 		startWS();
@@ -136,7 +137,6 @@ var ee = new EventEmitter();
 ee.setMaxListeners(0);
 
 var feed = [];
-var MAX_FEED = 50;
 
 function startWS() {
 	var wss = new ws.Server({ server: httpServer });
