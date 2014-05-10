@@ -3,12 +3,16 @@ var a = /^(.*\/)([^\/]+)$/.exec(repo);
 var repoPrefix = a[1], reponame = a[2];
 var username = (/<(.*?)[@>+]/.exec(author) || ['',author])[1];
 var dateISO = new Date(date).toISOString();
+var messageTruncated = (function() {
+	if(message.length < 80) return message;
+	else return message.slice(0, 77) + '...';
+})();
 %>
 	<span class="repo">
 		<%= repoPrefix -%><span class="reponame"><%= reponame %></span>
 	</span>
 	<span class="message">
-		<%= message %>
+		<%= messageTruncated %>
 	</span>
 	<div class="author-date">
 		<span class="author"><%= username %></span>
