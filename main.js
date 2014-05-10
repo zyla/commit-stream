@@ -145,7 +145,23 @@ function startWS() {
 			ws.send(JSON.stringify(newCommit));
 		}
 
-		ee.addListener('newCommit', onNewCommit);
+		function subscribe() {
+			ee.addListener('newCommit', onNewCommit);
+			subscribe = function() {};
+		}
+
+		ws.on('message', function(data) {
+			var last_sha = data;
+			var index = feed.length - 1;
+			while(index >= 0 && feed[index].sha != last_sha)
+				index--;
+			index++;
+			for(; index < feed.length; index++) {
+				console.log(index);
+				onNewCommit(feed[index]);
+			}
+			subscribe();
+		});
 
 		ws.on('close', function() {
 			ee.removeListener('newCommit', onNewCommit);

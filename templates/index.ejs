@@ -10,25 +10,47 @@
 </script>
 <script src="ejs.js"></script>
 <script>
-var ws = new WebSocket('<%= config.socketUrl %>');
-var template = document.getElementById('commit_template').textContent;
-ws.addEventListener('message', function(event) {
-	var commit = JSON.parse(event.data);
+var lastSHA = '<%= commits[commits.length-1].sha %>';
+function doConnect() {
+	var ws = new WebSocket('<%= config.socketUrl %>');
+	var template = document.getElementById('commit_template').textContent;
+	ws.addEventListener('open', function() {
+			console.log('connected');
+		ws.send(lastSHA);
+	});
+	ws.addEventListener('message', function(event) {
+		var commit = JSON.parse(event.data);
+		lastSHA = commit.sha;
 
-	var src = ejs.render(template, commit);
+		var src = ejs.render(template, commit);
 
-	var el = document.createElement('div');
-	el.className = 'commit';
-	el.innerHTML = src;
-	
-	var commits = document.getElementById('commits');
-	if(commits.firstChild)
-		commits.insertBefore(el, commits.firstChild);
-	else
-		commits.appendChild(el);
+		var el = document.createElement('div');
+		el.className = 'commit';
+		el.innerHTML = src;
+		
+		var commits = document.getElementById('commits');
+		if(commits.firstChild)
+			commits.insertBefore(el, commits.firstChild);
+		else
+			commits.appendChild(el);
 
-	jQuery(el).find('.date').timeago();
-});
+		jQuery(el).find('.date').timeago();
+	});
+	ws.addEventListener('error', function() {
+		console.log('Socket errored, reconnecting.');
+		reconnect();
+	});
+	ws.addEventListener('close', function() {
+		console.log('Socket closed, reconnecting.');
+		reconnect();
+	});
+
+	function reconnect() {
+		setTimeout(doConnect, 1000);
+		reconnect = function() {};
+	}
+}
+doConnect();
 </script>
 <style>
 body, html { margin: 0; padding: 0; width: 100%; }
