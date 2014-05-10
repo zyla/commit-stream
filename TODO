@@ -4,7 +4,6 @@ Commitstream TODO
 2. Make date in tooltip more readable
 3. Get rid of jquery
 4. Handle disconnects properly
-5. Prerender content on the server (SEO friendly!)
 6. Handle URLs github-like (filter by user or repo)
 7. Periodically check for new/deleted repos
 8. BUG: commits appear multiple times when permissions change

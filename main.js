@@ -141,8 +141,6 @@ var MAX_FEED = 50;
 function startWS() {
 	var wss = new ws.Server({ server: httpServer });
 	wss.on('connection', function(ws) {
-		feed.forEach(onNewCommit);
-
 		function onNewCommit(newCommit) {
 			ws.send(JSON.stringify(newCommit));
 		}
@@ -164,11 +162,14 @@ function startHHTP() {
 	var fileServer = new static.Server('./frontend');
 	var index = loadTemplate('./templates/index.ejs');
 	var commitTemplate = fs.readFileSync(require.resolve('./templates/commit.ejs'), 'utf-8');
+	var commitCompiled = ejs.compile(commitTemplate);
 	httpServer = http.createServer(function(request, response) {
 		if(request.url == '/') {
 			var context = {
 				config: config,
-				commitTemplate: commitTemplate
+				commitTemplate: commitTemplate,
+				commitTemplateCompiled: commitCompiled,
+				commits: feed
 			};
 			response.end(index(context));
 		} else {

@@ -17,7 +17,7 @@ ws.addEventListener('message', function(event) {
 
 	var src = ejs.render(template, commit);
 
-	var el = document.createElement('p');
+	var el = document.createElement('div');
 	el.className = 'commit';
 	el.innerHTML = src;
 	
@@ -42,16 +42,16 @@ body {
 	width: 100%;
 }
 
-#commits p { display: table-row; width: 100%; }
-#commits p:hover {
+#commits .commit { display: table-row; width: 100%; }
+#commits .commit:hover {
 	background-color: #f0f0f0;
 }
-#commits p > * {
+#commits .commit > * {
 	display: table-cell;
 	white-space: nowrap;
 	padding-right: 5px;
 }
-#commits p:hover > span {
+#commits .commit:hover > span {
 }
 .date {
 	color: #007700;
@@ -75,7 +75,14 @@ Git Commit Stream
 </h1>
 </header>
 <main>
-<div id="commits"></div>
+<div id="commits">
+	<% for(var i = commits.length - 1; i >= 0; i--) {
+		buf.push('<div class="commit">' + commitTemplateCompiled(commits[i]) + '</div>');
+	} %>
+</div>
+<script>
+$('#commits .date').timeago();
+</script>
 </main>
 <footer>
 <p>
