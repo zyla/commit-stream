@@ -119,7 +119,7 @@ function emitCommits(repo, newCommits) {
 }
 
 function pushCommit(commit) {
-	if(feed.length == MAX_FEED)
+	if(feed.length == config.commitListSize)
 		delete feed[0]; // FIXME grossly inefficient!
 	feed.push(commit);
 	ee.emit('newCommit', commit);
@@ -139,8 +139,11 @@ ee.setMaxListeners(0);
 var feed = [];
 
 function startWS() {
+	var nextWsId = 1;
 	var wss = new ws.Server({ server: httpServer });
 	wss.on('connection', function(ws) {
+		var id = nextWsId++;
+		console.log('CONNECT ' + id);
 		function onNewCommit(newCommit) {
 			ws.send(JSON.stringify(newCommit));
 		}
@@ -157,14 +160,22 @@ function startWS() {
 				index--;
 			index++;
 			for(; index < feed.length; index++) {
-				console.log(index);
 				onNewCommit(feed[index]);
 			}
 			subscribe();
 		});
 
-		ws.on('close', function() {
+		function unsubscribe() {
 			ee.removeListener('newCommit', onNewCommit);
+		}
+
+		ws.on('close', function() {
+			console.log('CLOSE ' + id);
+			unsubscribe();
+		});
+		ws.on('error', function() {
+			console.log('ERROR ' + id);
+			unsubscribe();
 		});
 	});
 	console.log('OK, started.');
