@@ -11,10 +11,10 @@ var messageTruncated = (function() {
 	<span class="repo">
 		<%= repoPrefix -%><span class="reponame"><%= reponame %></span>
 	</span>
-	<span class="message">
+	<span class="message" title="<%= message %>">
 		<%= messageTruncated %>
 	</span>
 	<div class="author-date">
-		<span class="author"><%= username %></span>
+		<span class="author" title="<%= author %>"><%= username %></span>
 		<span class="date" title="<%= dateISO %>"><%= date %></span>
 	</div>
