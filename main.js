@@ -8,7 +8,12 @@ var ws = require('ws'),
 	ejs = require('ejs'),
 	EventEmitter = require('events').EventEmitter;
 
-var config = require('./config');
+var configName = './config.js';
+
+if(process.argv.length > 2)
+	configName = process.argv[2];
+
+var config = require(configName);
 config.commitListSize = config.commitListSize || 100;
 config.commitsPerRepo = config.commitsPerRepo || 50;
 
